@@ -53,9 +53,9 @@ class _AuthScreenState extends State<AuthScreen> {
             .collection('users')
             .document(_authResult.user.uid)
             .setData({
-          'userName': userName,
+          'username': userName,
           'email': email,
-          'url': url
+          'image_url': url
         });
       }
     } on PlatformException catch (err) {
