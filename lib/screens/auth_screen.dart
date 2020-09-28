@@ -23,7 +23,7 @@ class _AuthScreenState extends State<AuthScreen> {
     bool isLogin,
     BuildContext context,
   ) async {
-    AuthResult _authResult;
+    UserCredential _authResult;
 
     try {
       setState(() {
@@ -49,10 +49,10 @@ class _AuthScreenState extends State<AuthScreen> {
 
         final url = await ref.getDownloadURL();
 
-        await Firestore.instance
+        await FirebaseFirestore.instance
             .collection('users')
-            .document(_authResult.user.uid)
-            .setData({
+            .doc(_authResult.user.uid)
+            .set({
           'username': userName,
           'email': email,
           'image_url': url

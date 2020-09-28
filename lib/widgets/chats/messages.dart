@@ -6,45 +6,30 @@ import 'package:flutter/material.dart';
 class Messages extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: FirebaseAuth.instance.currentUser(),
-      builder: (context, snapShot) {
+    final user = FirebaseAuth.instance.currentUser;
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection('chat')
+          .orderBy('createdAt', descending: true)
+          .snapshots(),
+      builder: (context, AsyncSnapshot<QuerySnapshot> snapShot) {
         if (snapShot.connectionState == ConnectionState.waiting) {
           return Center(
-            child: CircularProgressIndicator(
-              backgroundColor: Theme.of(context).accentColor,
-            ),
+            child: CircularProgressIndicator(),
           );
         }
-        return StreamBuilder(
-            stream: Firestore.instance
-                .collection('chat')
-                .orderBy(
-                  'createdAt',
-                  descending: true,
-                )
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(
-                  child: CircularProgressIndicator(
-                    backgroundColor: Theme.of(context).accentColor,
-                  ),
-                );
-              }
-              final chatDocs = snapshot.data.documents;
-              return ListView.builder(
-                reverse: true,
-                itemBuilder: (context, index) => MessageBubble(
-                  chatDocs[index]['text'],
-                  chatDocs[index]['userId'] == snapShot.data.uid,
-                  chatDocs[index]['username'],
-                  chatDocs[index]['userImage'],
-                  key: ValueKey(chatDocs[index].documentID),
-                ),
-                itemCount: chatDocs.length,
-              );
-            });
+        final chatDocs = snapShot.data.docs;
+        return ListView.builder(
+          itemBuilder: (ctx, index) => MessageBubble(
+            chatDocs[index].data()['text'],
+            chatDocs[index].data()['userId'] == user.uid,
+            chatDocs[index].data()['username'],
+            chatDocs[index].data()['userImage'],
+            key: ValueKey(chatDocs[index].id),
+          ),
+          reverse: true,
+          itemCount: chatDocs.length,
+        );
       },
     );
   }
